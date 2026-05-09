@@ -962,7 +962,9 @@ export default function RoutePanel({
         )}
 
         {routeOptions.length > 0 && (
-          <div className="route-summary">
+
+          <div>
+            <div className="route-summary">
             <div className="route-options-list">
               {rankedRouteOptions.map((option, idx) => {
                   const isSelected = option.id === selectedRouteId;
@@ -1057,7 +1059,6 @@ export default function RoutePanel({
             )}
           </div>
 
-          {routeOptions.length > 0 && (
             <div className="cool-zones-panel">
               <div className="cool-suggestion-popup glass-panel">
                 <span className="cool-popup-label">Cool Zone Alert</span>
@@ -1113,7 +1114,7 @@ export default function RoutePanel({
                 <Navigation size={16} /> Continue route after resting
               </button>
             </div>
-          )}
+          </div>
         )}
       </div>
     </div>
