@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import MapBox from './components/MapBox';
 import RoutePanel from './components/RoutePanel';
+import ActivitySummary from './components/ActivitySummary';
 import { Calendar } from 'lucide-react';
 import './App.css';
 import type { RouteOption, LocationPoint } from './types';
@@ -40,6 +41,7 @@ function App() {
   const [activeRoute, setActiveRoute] = useState<RouteOption | null>(null);
   const [shadeScanNonce, setShadeScanNonce] = useState(0);
   const [nightLightScores, setNightLightScores] = useState<Record<string, number>>({});
+  const [showSummary, setShowSummary] = useState<boolean>(true); // Show summary by default
 
   const handleStartNavigation = () => {
     const routeIdToUse = selectedRouteId ?? routeOptions[0]?.id ?? null;
@@ -53,6 +55,10 @@ function App() {
   };
 
   const isNight = isNightFromTime(selectedTime);
+
+  if (showSummary) {
+    return <ActivitySummary onClose={() => setShowSummary(false)} />;
+  }
 
   return (
     <div className={`app-container ${isNight ? 'night-theme' : ''} ${isNavigating ? 'is-navigating' : ''}`}>
