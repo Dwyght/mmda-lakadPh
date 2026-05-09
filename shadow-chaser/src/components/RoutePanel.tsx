@@ -11,7 +11,14 @@ import {
   ChevronUp,
   AlertCircle,
   Search,
-  LocateFixed
+  LocateFixed,
+  Sun,
+  TreeDeciduous,
+  ShieldCheck,
+  Coffee,
+  ShoppingBag,
+  Droplet,
+  Store
 } from 'lucide-react';
 import type { RouteData, RouteOption, LocationPoint } from '../types';
 
@@ -299,6 +306,78 @@ export default function RoutePanel({
   const timeSelectorRef = useRef<HTMLDivElement | null>(null);
 
   const isNight = isNightFromTime(selectedTime);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+
+  const coolZonesStores = [
+    {
+      id: 's1',
+      name: '7‑Eleven Taft',
+      category: 'Convenience store',
+      icon: <ShoppingBag size={16} />,
+      rating: 4.6,
+      walkMinutes: 3,
+      shade: 'Medium',
+      status: 'Open',
+      tags: ['Airconditioned', 'Water', 'Safe at Night']
+    },
+    {
+      id: 's2',
+      name: 'Cafe Luntian',
+      category: 'Cafe',
+      icon: <Coffee size={16} />,
+      rating: 4.8,
+      walkMinutes: 6,
+      shade: 'High',
+      status: 'Open',
+      tags: ['Airconditioned', 'Shade']
+    },
+    {
+      id: 's3',
+      name: 'SM Aura Mall',
+      category: 'Mall',
+      icon: <Store size={16} />,
+      rating: 4.7,
+      walkMinutes: 9,
+      shade: 'High',
+      status: 'Open',
+      tags: ['Airconditioned', 'Shade', 'Safe at Night']
+    },
+    {
+      id: 's4',
+      name: 'Rainforest Water Hub',
+      category: 'Water station',
+      icon: <Droplet size={16} />,
+      rating: 4.4,
+      walkMinutes: 4,
+      shade: 'Low',
+      status: 'Open',
+      tags: ['Water']
+    },
+    {
+      id: 's5',
+      name: 'Sheltered Waiting Shed',
+      category: 'Shade stop',
+      icon: <TreeDeciduous size={16} />,
+      rating: 4.2,
+      walkMinutes: 2,
+      shade: 'Very High',
+      status: 'Open',
+      tags: ['Shade', 'Safe at Night']
+    }
+  ];
+
+  const toggleFilter = (filter: string) => {
+    setActiveFilters((prev) => prev.includes(filter) ? prev.filter((value) => value !== filter) : [...prev, filter]);
+  };
+
+  const filteredStores = activeFilters.length > 0
+    ? coolZonesStores.filter((store) => store.tags.some((tag) => activeFilters.includes(tag)))
+    : coolZonesStores;
+
+  const nextCoolStop = filteredStores[0] ?? coolZonesStores[0];
+  const coolStopMessage = nextCoolStop
+    ? `High heat ahead. Cooling stop available in ${nextCoolStop.walkMinutes}m.`
+    : 'No cooling stops found along your route yet.';
 
   const handleOriginChange = useCallback((value: string) => {
     setOrigin({ text: value, coords: null });
@@ -527,6 +606,48 @@ export default function RoutePanel({
     return a.id.localeCompare(b.id);
   });
 
+  const estimateHeatIndex = (baseTime: string): number => {
+    const mins = timeStringToMinutes(baseTime);
+    const normalized = Math.sin(((mins - 360) / 720) * Math.PI);
+    return Math.round(32 + Math.max(0, normalized) * 8 + (isNight ? -2 : 0));
+  };
+
+  const formatHeatExposure = (score: number | null) => {
+    if (score === null) return 'Moderate';
+    if (score > 70) return 'Extreme';
+    if (score > 45) return 'High';
+    return 'Low';
+  };
+
+  const computeSafetyScore = (option: RouteOption) => {
+    const shade = option.intensityScore ?? 50;
+    const durationFactor = Math.max(0, Math.min(1, 1 - option.route.duration / 1800));
+    return Math.min(100, Math.round(55 + (100 - shade) * 0.3 + durationFactor * 25));
+  };
+
+  const fastestRoute = routeOptions.reduce<RouteOption | null>((best, option) => {
+    if (!best || option.route.duration < best.route.duration) return option;
+    return best;
+  }, null);
+
+  const coolerRoute = routeOptions.reduce<RouteOption | null>((best, option) => {
+    if (!best) return option;
+    if ((option.intensityScore ?? 999) < (best.intensityScore ?? 999)) return option;
+    return best;
+  }, null);
+
+  const saferRoute = routeOptions.reduce<RouteOption | null>((best, option) => {
+    if (!best) return option;
+    return computeSafetyScore(option) > computeSafetyScore(best) ? option : best;
+  }, null);
+
+  const heatIndex = estimateHeatIndex(selectedTime);
+  const weatherSummary = routeOptions.length > 0 ? 'Expect bright sun with humid Manila air, ideal for shaded walking corridors.' : 'Select your route to see personalized comfort insights.';
+
+  const handleChooseCoolerRoute = () => {
+    if (coolerRoute) onSelectRoute(coolerRoute.id);
+  };
+
   const routeInputs = (
     <div className="input-group route-inputs-group">
       {/* Point A */}
@@ -724,6 +845,102 @@ export default function RoutePanel({
           </div>
         </div>
 
+        <div className="travel-nudge-panel">
+          <div className="weather-card glass-panel">
+            <div className="weather-card-meta">
+              <div>
+                <div className="weather-label">Heat-aware routing</div>
+                <div className="weather-title">Weather & comfort summary</div>
+              </div>
+              <div className="weather-icon"><Sun size={24} /></div>
+            </div>
+            <div className="weather-details">
+              <div className="weather-temp">{heatIndex}°C</div>
+              <div className="weather-subtle">Heat index</div>
+              <div className="weather-text">{weatherSummary}</div>
+            </div>
+            <div className="weather-metrics-row">
+              <div className="weather-metric">
+                <span className="weather-metric-value">{formatHeatExposure(coolerRoute?.intensityScore ?? null)}</span>
+                <span className="weather-metric-label">Heat exposure</span>
+              </div>
+              <div className="weather-metric">
+                <span className="weather-metric-value">{coolerRoute ? `${Math.max(0, 100 - Math.round(coolerRoute.intensityScore ?? 50))}%` : '--'}</span>
+                <span className="weather-metric-label">Best shade</span>
+              </div>
+              <div className="weather-metric">
+                <span className="weather-metric-value">{saferRoute ? computeSafetyScore(saferRoute) : '--'}</span>
+                <span className="weather-metric-label">Safety score</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="suggestion-cards">
+            <div className="suggestion-card">
+              <div className="suggestion-icon suggestion-icon-cool"><TreeDeciduous size={18} /></div>
+              <div>
+                <div className="suggestion-title">Leave 20 mins later for 45% more shade</div>
+                <div className="suggestion-copy">Shaded routes are cooler and more comfortable for afternoon walking.</div>
+              </div>
+            </div>
+            <div className="suggestion-card suggestion-card-warm">
+              <div className="suggestion-icon suggestion-icon-warm"><Sun size={18} /></div>
+              <div>
+                <div className="suggestion-title">This route avoids extreme heat exposure</div>
+                <div className="suggestion-copy">AI selects the most sheltered corridors based on current sunlight patterns.</div>
+              </div>
+            </div>
+            <div className="suggestion-card suggestion-card-blue">
+              <div className="suggestion-icon suggestion-icon-blue"><ShieldCheck size={18} /></div>
+              <div>
+                <div className="suggestion-title">Walking + LRT is faster today</div>
+                <div className="suggestion-copy">A transit-assisted option saves time while keeping the walk comfortable.</div>
+              </div>
+            </div>
+          </div>
+
+          {routeOptions.length > 0 && (
+            <div className="route-comparison-grid">
+              {[
+                { title: 'Fastest Route', option: fastestRoute, accent: 'fast' },
+                { title: 'Cooler Route', option: coolerRoute, accent: 'cool' },
+                { title: 'Safer Route', option: saferRoute, accent: 'safe' }
+              ].map((entry) => (
+                <div key={entry.title} className="comparison-card">
+                  <div className="comparison-card-header">
+                    <span>{entry.title}</span>
+                    <span className={`comparison-pill comparison-pill-${entry.accent}`}>{entry.option?.label ?? 'N/A'}</span>
+                  </div>
+                  <div className="comparison-stats-row">
+                    <div className="comparison-stat">
+                      <span className="comparison-value">{entry.option ? formatDuration(entry.option.route.duration) : '--'}</span>
+                      <span className="comparison-label">ETA</span>
+                    </div>
+                    <div className="comparison-stat">
+                      <span className="comparison-value">{entry.option ? `${Math.max(0, 100 - Math.round(entry.option.intensityScore ?? 50))}%` : '--'}</span>
+                      <span className="comparison-label">Shade</span>
+                    </div>
+                  </div>
+                  <div className="comparison-stats-row">
+                    <div className="comparison-stat">
+                      <span className="comparison-value">{entry.option ? formatHeatExposure(entry.option.intensityScore ?? null) : '--'}</span>
+                      <span className="comparison-label">Heat</span>
+                    </div>
+                    <div className="comparison-stat">
+                      <span className="comparison-value">{entry.option ? computeSafetyScore(entry.option) : '--'}</span>
+                      <span className="comparison-label">Safety</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button type="button" className="choose-cooler-btn action-button" onClick={handleChooseCoolerRoute}>
+            <Sun size={16} /> Choose Cooler Route
+          </button>
+        </div>
+
         {/* This function was created using Generative AI */}
         {/* Find Route Button */}
         <button
@@ -839,6 +1056,64 @@ export default function RoutePanel({
               </div>
             )}
           </div>
+
+          {routeOptions.length > 0 && (
+            <div className="cool-zones-panel">
+              <div className="cool-suggestion-popup glass-panel">
+                <span className="cool-popup-label">Cool Zone Alert</span>
+                <span className="cool-popup-message">{coolStopMessage}</span>
+              </div>
+
+              <div className="filter-pill-row">
+                {['Airconditioned', 'Water', 'Shade', 'Safe at Night'].map((filter) => (
+                  <button
+                    key={filter}
+                    type="button"
+                    className={`filter-pill ${activeFilters.includes(filter) ? 'active' : ''}`}
+                    onClick={() => toggleFilter(filter)}
+                  >
+                    {filter}
+                  </button>
+                ))}
+              </div>
+
+              <div className="store-list">
+                {filteredStores.map((store) => (
+                  <div key={store.id} className="store-card glass-panel">
+                    <div className="store-card-header">
+                      <div className="store-card-icon">{store.icon}</div>
+                      <div>
+                        <div className="store-title">{store.name}</div>
+                        <div className="store-category">{store.category}</div>
+                      </div>
+                    </div>
+                    <div className="store-card-meta">
+                      <div className="store-badge">{store.status}</div>
+                      <div className="store-rating">{store.rating} ★</div>
+                    </div>
+                    <div className="store-card-stats">
+                      <div className="store-metric">
+                        <span className="store-metric-value">{store.walkMinutes} min</span>
+                        <span className="store-metric-label">walk</span>
+                      </div>
+                      <div className="store-metric">
+                        <span className="store-metric-value">{store.shade}</span>
+                        <span className="store-metric-label">shade</span>
+                      </div>
+                      <div className="store-metric">
+                        <span className="store-metric-value">{store.tags.join(' • ')}</span>
+                        <span className="store-metric-label">amenities</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button type="button" className="continue-route-btn action-button">
+                <Navigation size={16} /> Continue route after resting
+              </button>
+            </div>
+          )}
         )}
       </div>
     </div>

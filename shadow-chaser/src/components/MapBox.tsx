@@ -1,10 +1,11 @@
 // MapBox.tsx
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Map, { Source, Layer, Marker, type MapRef, NavigationControl } from 'react-map-gl/mapbox';
 import { type MapboxGeoJSONFeature } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import ShadeMap from 'mapbox-gl-shadow-simulator';
 import SunCalc from 'suncalc';
+import { Coffee, Droplet, TreeDeciduous, Store } from 'lucide-react';
 import type { RouteOption } from '../types';
 import NavigationUI from './NavigationUI';
 
@@ -38,10 +39,10 @@ const INITIAL_VIEW_STATE = {
   bearing: -20
 };
 
-const ROUTE_STYLES: Record<string, { color: string; dash?: number[]; width: number; opacity: number; offset?: number }> = {
-  A: { color: '#ea4335', width: 9, opacity: 1, offset: -4 },
-  B: { color: '#4285F4', width: 9, opacity: 1, offset: 0 },
-  C: { color: '#facc15', width: 9, opacity: 1, offset: 4 }
+const ROUTE_STYLES: Record<string, { color: string; textColor: string; dash?: number[]; width: number; opacity: number; offset?: number }> = {
+  A: { color: '#ea4335', textColor: '#ffffff', width: 9, opacity: 1, offset: -4 },
+  B: { color: '#4285F4', textColor: '#ffffff', width: 9, opacity: 1, offset: 0 },
+  C: { color: '#facc15', textColor: '#111827', width: 9, opacity: 1, offset: 4 }
 };
 
 function getDateForTime(time: string) {
@@ -85,6 +86,18 @@ export default function MapBox({
   const lastHeadingUpdateMsRef = useRef(0);
   
   const [orientationPermGranted, setOrientationPermGranted] = useState(false);
+
+  const coolZoneMarkers = useMemo(() => {
+    if (!routeOptions.length) return [] as { id: string; coords:[number, number]; type: string; }[];
+    const coords = routeOptions[0].route.geometry.coordinates;
+    const sampleIndexes = [2, Math.floor(coords.length / 3), Math.floor((coords.length * 2) / 3), coords.length - 3];
+    const types = ['Water', 'Cafe', 'Shade', 'Mall'];
+    return sampleIndexes.filter((idx) => coords[idx]).map((idx, index) => ({
+      id: `cool-zone-${index}`,
+      coords: coords[idx] as [number, number],
+      type: types[index] || 'Cool Zone'
+    }));
+  }, [routeOptions]);
   const [showOrientationPrompt, setShowOrientationPrompt] = useState(false);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [distToNextStep, setDistToNextStep] = useState(0);
@@ -611,8 +624,7 @@ export default function MapBox({
             const ranked = [...routeOptions].sort((a, b) => (a.intensityScore ?? 999) - (b.intensityScore ?? 999));
             return ranked.map((option) => {
               const isSelected = option.id === selectedRouteId;
-              const rankIndex = ranked.indexOf(option);
-              const rankColor = rankIndex === 0 ? '#0098d9' : (rankIndex === 1 ? '#facc15' : '#ea4335');
+              const routeColor = ROUTE_STYLES[option.id]?.color || '#0098d9';
               return (
                 <Source key={option.id} type="geojson" data={{ type: 'Feature', geometry: option.route.geometry } as any}>
                   <Layer
@@ -620,11 +632,11 @@ export default function MapBox({
                     type="line"
                     layout={{ 'line-join': 'round', 'line-cap': 'round' }}
                     paint={{
-                      'line-color': rankColor,
-                      'line-width': isSelected ? 9.8 : 5,
-                      'line-opacity': isSelected ? 0.96 : 0.88,
+                      'line-color': routeColor,
+                      'line-width': isSelected ? 10 : 6,
+                      'line-opacity': isSelected ? 0.98 : 0.88,
                       'line-offset': (ROUTE_STYLES[option.id]?.offset || 0),
-                      ...(isSelected ? {} : { 'line-dasharray': [2.2, 2.2] })
+                      ...(isSelected ? {} : { 'line-dasharray': [2.4, 2.4] })
                     }}
                   />
                 </Source>
@@ -632,14 +644,67 @@ export default function MapBox({
             });
           })()}
 
+          {coolZoneMarkers.length > 0 && (
+            <Source
+              id="cool-zone-points"
+              type="geojson"
+              data={{
+                type: 'FeatureCollection',
+                features: coolZoneMarkers.map((zone) => ({
+                  type: 'Feature',
+                  properties: { id: zone.id, label: zone.type },
+                  geometry: { type: 'Point', coordinates: zone.coords }
+                }))
+              }}
+            >
+              <Layer
+                id="cool-zone-points-layer"
+                type="circle"
+                paint={{
+                  'circle-color': '#22c55e',
+                  'circle-radius': 16,
+                  'circle-opacity': 0.35,
+                  'circle-stroke-color': '#8ee6b9',
+                  'circle-stroke-width': 2
+                }}
+              />
+            </Source>
+          )}
+
+          {coolZoneMarkers.map((zone) => {
+            const IconComponent = zone.type === 'Cafe'
+              ? Coffee
+              : zone.type === 'Water'
+                ? Droplet
+                : zone.type === 'Shade'
+                  ? TreeDeciduous
+                  : Store;
+            const colorClass = zone.type === 'Cafe'
+              ? 'cool-zone-cafe'
+              : zone.type === 'Water'
+                ? 'cool-zone-water'
+                : zone.type === 'Mall'
+                  ? 'cool-zone-mall'
+                  : 'cool-zone-shade';
+            return (
+              <Marker key={zone.id} longitude={zone.coords[0]} latitude={zone.coords[1]} anchor="center">
+                <div className={`cool-zone-marker ${colorClass}`} title={zone.type}>
+                  <IconComponent size={16} />
+                </div>
+              </Marker>
+            );
+          })}
+
           {[...routeOptions]
             .sort((a, b) => (a.intensityScore ?? 999) - (b.intensityScore ?? 999))
-            .map((option, rankIndex) => {
+            .map((option) => {
             const midpoint = option.route.geometry.coordinates[Math.floor(option.route.geometry.coordinates.length / 2)];
+            const style = ROUTE_STYLES[option.id] || { color: '#0098d9', textColor: '#ffffff' };
             return (
               <Marker key={`label-${option.id}`} longitude={midpoint[0]} latitude={midpoint[1]} anchor="center">
-                <div 
-                  className={`path-label-marker path-label-rank-${rankIndex} ${option.id === selectedRouteId ? 'selected' : ''}`}
+                <div
+                  className={`path-label-marker ${option.id === selectedRouteId ? 'selected' : ''}`}
+                  style={{ backgroundColor: style.color, color: style.textColor }}
                   onClick={() => onSelectRoute(option.id)}
                 >
                   {option.label}

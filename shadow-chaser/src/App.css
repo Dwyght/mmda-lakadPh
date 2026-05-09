@@ -735,37 +735,296 @@ input[type=range]::-webkit-slider-thumb {
   padding: 0;
 }
 
-.route-options-list {
+.travel-nudge-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
+  margin-top: 12px;
 }
 
-.route-option-card {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  padding: 8px 10px;
+.weather-card {
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(14, 23, 40, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-.route-option-main {
+.weather-card-meta {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  margin-bottom: 5px;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.route-coolest-text {
+.weather-label {
+  text-transform: uppercase;
   font-size: 0.72rem;
-  font-weight: 700;
-  color: #38bdf8;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.14em;
+  opacity: 0.8;
+  color: #a5f3fc;
 }
 
-.steps-note {
-  font-size: 0.73rem;
+.weather-title {
+  margin-top: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.weather-icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.weather-details {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.weather-temp {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.weather-subtle {
   color: var(--text-muted);
-  padding: 0 2px;
+  font-size: 0.85rem;
+}
+
+.weather-text {
+  color: var(--text-main);
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
+.weather-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.weather-metric {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.weather-metric-value {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.weather-metric-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.suggestion-cards {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.suggestion-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.suggestion-card-warm {
+  background: rgba(255, 197, 115, 0.09);
+}
+
+.suggestion-card-blue {
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.suggestion-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.suggestion-icon-cool {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.14);
+}
+
+.suggestion-icon-warm {
+  color: #f97316;
+  background: rgba(248, 113, 113, 0.14);
+}
+
+.suggestion-icon-blue {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.16);
+}
+
+.suggestion-title {
+  font-weight: 700;
+  font-size: 0.94rem;
+  margin-bottom: 4px;
+}
+
+.suggestion-copy {
+  color: var(--text-muted);
+  line-height: 1.4;
+  font-size: 0.83rem;
+}
+
+.route-comparison-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.comparison-card {
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.comparison-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.comparison-pill {
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.comparison-pill-fast { background: rgba(56, 189, 248, 0.14); color: #38bdf8; }
+.comparison-pill-cool { background: rgba(34, 197, 94, 0.14); color: #22c55e; }
+.comparison-pill-safe { background: rgba(251, 191, 36, 0.14); color: #facc15; }
+
+.comparison-stats-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.comparison-stat {
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.comparison-value {
+  display: block;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.comparison-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.choose-cooler-btn {
+  width: 100%;
+  justify-content: center;
+  font-size: 0.96rem;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.route-options-list .route-option-card.selected {
+  background: rgba(1, 132, 255, 0.2);
+  border-color: rgba(1, 132, 255, 0.35);
+}
+
+.route-summary-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: center;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.summary-value {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.summary-label {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.summary-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  min-height: 32px;
+}
+
+.steps-toggle-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  font-weight: 600;
+  gap: 10px;
+}
+
+.step-item {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 8px;
+}
+
+.step-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.step-instruction {
+  font-size: 0.88rem;
+}
+
+.step-distance {
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }
 
 .route-content-divider {
@@ -950,7 +1209,7 @@ input[type=range]::-webkit-slider-thumb {
 
 /* Route A/B/C line labels placed on map */
 .path-label-marker {
-  min-width: 54px;
+  min-width: 58px;
   text-align: center;
   font-size: 0.62rem;
   font-weight: 700;
@@ -958,21 +1217,195 @@ input[type=range]::-webkit-slider-thumb {
   letter-spacing: 0.5px;
   color: #ffffff;
   border-radius: 999px;
-  padding: 3px 7px;
+  padding: 4px 10px;
   border: 1px solid rgba(255, 255, 255, 0.55);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.55);
 }
 .path-label-rank-0 { background: rgba(0, 152, 217, 0.9); border-color: rgba(255,255,255,0.4); }
 .path-label-rank-1 { background: rgba(250, 204, 21, 0.96); color: #111827; border-color: rgba(0,0,0,0.1); }
 .path-label-rank-2 { background: rgba(244, 63, 94, 0.9); border-color: rgba(255,255,255,0.4); }
 
-/* Coolest Path Highlighting */
 /* Interactive Selection Styles */
 .path-label-marker.selected {
   transform: scale(1.18);
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
   z-index: 100 !important;
   border-width: 2px;
+}
+
+.cool-zone-marker {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: white;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+.cool-zone-water {
+  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+}
+
+.cool-zone-cafe {
+  background: linear-gradient(135deg, #f97316 0%, #fb7185 100%);
+}
+
+.cool-zone-mall {
+  background: linear-gradient(135deg, #8b5cf6 0%, #22d3ee 100%);
+}
+
+.cool-zone-shade {
+  background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
+}
+
+.cool-zones-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.cool-suggestion-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.cool-popup-label {
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.cool-popup-message {
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: var(--text-main);
+}
+
+.filter-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-pill {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.filter-pill.active {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #d9f99d;
+}
+
+.store-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.store-card {
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.store-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.store-card-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+}
+
+.store-title {
+  font-weight: 700;
+  font-size: 0.97rem;
+}
+
+.store-category {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.store-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.store-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  background: rgba(255, 255, 255, 0.07);
+  color: #a5f3fc;
+}
+
+.store-rating {
+  font-size: 0.82rem;
+  color: #facc15;
+  font-weight: 700;
+}
+
+.store-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.store-metric {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.store-metric-value {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.store-metric-label {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+.continue-route-btn {
+  width: 100%;
+  justify-content: center;
+  font-size: 0.95rem;
+  padding: 14px 16px;
+  border-radius: 18px;
 }
 
 .route-option-card.selected {
